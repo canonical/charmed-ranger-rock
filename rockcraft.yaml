@@ -1,0 +1,155 @@
+# Copyright 2024 Canonical Ltd.
+# See LICENSE file for licensing details.
+---
+
+name: charmed-ranger-rock
+base: ubuntu@22.04
+version: 2.4.0-22.04-edge
+summary: Charmed ranger ROCK OCI
+description: |
+  Apache Ranger™ is a framework to enable, monitor and manage comprehensive 
+  data security across the Hadoop platform.
+license: Apache-2.0
+
+platforms:
+  amd64:
+
+parts:
+  base:
+    plugin: nil
+    source: "https://downloads.apache.org/ranger/2.4.0/apache-ranger-2.4.0.tar.gz" # yamllint disable-line
+    build-packages:
+      - build-essential
+      - curl
+      - gcc
+      - gnupg
+      - patch
+      - wget
+      - maven
+      - git
+      - openjdk-11-jdk-headless
+    build-environment:
+      - SOURCE: "https://downloads.apache.org/ranger/"
+      - VERSION: "2.4.0"
+      - TAR_FILE: "apache-ranger-2.4.0.tar.gz"
+      - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+      - RANGER_DIST: /home/ranger/dist
+    override-build: |
+      craftctl default
+
+      # make home directory
+      mkdir -p ${RANGER_DIST}
+
+      # Download the Ranger tar
+      wget "${SOURCE}/${VERSION}/${TAR_FILE}" -O ranger.tar.gz
+
+      # Unpack tar
+      tar -zxvf ranger.tar.gz -C ${RANGER_DIST} --strip-components 1
+      rm -rf ranger.tar.gz
+
+      # Build Ranger
+      mvn clean compile package install \
+        -DskipTests=true \
+        -Dmaven.test.skip=true \
+        -Drat.skip=true \
+        -Dpmd.skip=true \
+        -Dfindbugs.skip=true \
+        -Dspotbugs.skip=true \
+        -Dcheckstyle.skip=true \
+        -Dmaven.wagon.http.ssl.insecure=true \
+        -Dmaven.wagon.http.ssl.allowall=true \
+        -Dmaven.wagon.http.ssl.ignore.validity.dates=true
+
+      # Set up groups, users
+      groupadd ranger && \
+      useradd -g ranger -ms /bin/bash ranger && \
+      useradd -g ranger -ms /bin/bash rangeradmin && \
+      useradd -g ranger -ms /bin/bash rangerusersync && \
+
+      # Update permission
+      chown -R ranger:ranger ${RANGER_DIST}
+
+      mv target ${RANGER_DIST}/target
+      mkdir -p ${CRAFT_STAGE}${RANGER_DIST}
+      cp -r ${RANGER_DIST}/target ${CRAFT_STAGE}${RANGER_DIST}/target
+
+  admin:
+    after: [base]
+    plugin: nil
+    source: "https://downloads.apache.org/ranger/2.4.0/apache-ranger-2.4.0.tar.gz" # yamllint disable-line
+    build-environment:
+      - VERSION: "2.4.0"
+      - RANGER_DIST: /home/ranger/dist
+      - RANGER_SCRIPTS: /home/ranger/scripts
+      - RANGER_HOME: /usr/lib/ranger
+    override-build: |
+      craftctl default
+      mkdir -p ${CRAFT_PRIME}${RANGER_HOME}/admin
+
+      # Create directories
+      mkdir -p \
+        ${CRAFT_STAGE}/var/run/ranger \
+        ${CRAFT_STAGE}/var/log/ranger \
+        ${CRAFT_STAGE}/usr/share/java/ && \
+
+      # Grant permissions
+      chown -R ranger:ranger \
+        ${CRAFT_PRIME}${RANGER_HOME}/admin/ \
+        ${CRAFT_STAGE}/var/run/ranger/ \
+        ${CRAFT_STAGE}/var/log/ranger/
+
+      # Unpack admin tar
+      tar xvfz ${CRAFT_STAGE}${RANGER_DIST}/target/ranger-${VERSION}-admin.tar.gz \
+        --directory=${CRAFT_PRIME}${RANGER_HOME}/admin \
+        --strip-components=1 && \
+      rm -f ${CRAFT_STAGE}${RANGER_DIST}/ranger-${VERSION}-admin.tar.gz
+
+  usersync:
+    after: [base]
+    plugin: nil
+    source: "https://downloads.apache.org/ranger/2.4.0/apache-ranger-2.4.0.tar.gz" # yamllint disable-line
+    build-environment:
+      - VERSION: "2.4.0"
+      - RANGER_DIST: /home/ranger/dist
+      - RANGER_SCRIPTS: /home/ranger/scripts
+      - RANGER_HOME: /usr/lib/ranger
+    override-build: |
+      craftctl default
+
+      # Create directories
+      mkdir -p \
+        ${CRAFT_PRIME}${RANGER_HOME}/usersync \
+        ${CRAFT_STAGE}/var/log/ranger/usersync \
+        ${CRAFT_STAGE}/etc/ranger \
+        ${CRAFT_STAGE}${RANGER_SCRIPTS} \
+        ${CRAFT_STAGE}/usr/bin/ranger-usersync
+
+      # Grant permissions
+      chown -R ranger:ranger \
+        ${CRAFT_PRIME}${RANGER_HOME}/usersync/ \
+        ${CRAFT_STAGE}${RANGER_SCRIPTS}/ \
+        ${CRAFT_STAGE}/etc/ranger
+
+      # Unpack usersync tar
+      tar xvfz ${CRAFT_STAGE}${RANGER_DIST}/target/ranger-${VERSION}-usersync.tar.gz \
+        --directory=${CRAFT_PRIME}${RANGER_HOME}/usersync \
+        --strip-components=1 && \
+      rm -f ${CRAFT_STAGE}${RANGER_DIST}/ranger-${VERSION}-usersync.tar.gz
+
+  local-files:
+    plugin: dump
+    source: ./helper-scripts
+    organize:
+      ranger-admin-entrypoint.sh: /home/ranger/scripts/ranger-admin-entrypoint.sh
+      ranger-usersync-entrypoint.sh: /home/ranger/scripts/ranger-usersync-entrypoint.sh
+      ranger-admin-install.properties: /usr/lib/ranger/admin/install.properties
+      ranger-usersync-install.properties: /usr/lib/ranger/usersync/install.properties
+
+  overlay-pkgs:
+    plugin: nil
+    overlay-packages:
+      - ca-certificates
+      - vim
+      - openjdk-11-jdk-headless
+      - libpostgresql-jdbc-java
+      - python3
