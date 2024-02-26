@@ -49,7 +49,7 @@ rock-dev                Running           10.137.215.60    Ubuntu 22.04 LTS
                                           10.194.234.1
                                           172.17.0.1
 ```
-Navigate to `<VM IP Address>:6080` (in this case 10.137.215.60:8088) and login with `admin`/`rangerR0cks!`. 
+Navigate to `<VM IP Address>:6080` (in this case 10.137.215.60:6080) and login with `admin`/`rangerR0cks!`. 
 Further information on connecting services and creating policies can be found at [superset.apache.org](https://ranger.apache.org/blogs/policy_model.html).
 
 ## Using Makefile
