@@ -6,4 +6,4 @@ cd /usr/lib/ranger/usersync && \
 ./setup.sh && \
 ./ranger-usersync-services.sh start  && \
 ls -la && \
-tail -f /var/log/ranger/usersync/usersync-ranger-k8s-*.log
+tail -f /var/log/ranger/usersync/usersync-ranger-usersync-*.log
