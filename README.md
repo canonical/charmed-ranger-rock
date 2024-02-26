@@ -42,7 +42,7 @@ sudo skopeo --insecure-policy copy oci-archive:charmed-ranger-rock_2.4.0-22.04-e
 docker run -d --name ranger-ui-services -p 6080:6080 charmed-ranger-rock:2.4.0 --args ranger-admin -g 'daemon off:' \; start ranger-admin
 ```
 ### Login
-To access Superset, now exit the multipass instance run `multipass list` for the below output.
+To access Ranger, now exit the multipass instance run `multipass list` for the below output.
 ```
 Name                    State             IPv4             Image
 rock-dev                Running           10.137.215.60    Ubuntu 22.04 LTS
@@ -50,7 +50,7 @@ rock-dev                Running           10.137.215.60    Ubuntu 22.04 LTS
                                           172.17.0.1
 ```
 Navigate to `<VM IP Address>:6080` (in this case 10.137.215.60:6080) and login with `admin`/`rangerR0cks!`. 
-Further information on connecting services and creating policies can be found at [superset.apache.org](https://ranger.apache.org/blogs/policy_model.html).
+Further information on connecting services and creating policies can be found at [ranger.apache.org](https://ranger.apache.org/blogs/policy_model.html).
 
 ## Using Makefile
 
@@ -61,7 +61,7 @@ Further information on connecting services and creating policies can be found at
 `make clean-all` will remove the image and get you ready to start from `make dev`
 
 ## License
-The Charmed Superset ROCK is free software, distributed under the Apache
+The Charmed Ranger ROCK is free software, distributed under the Apache
 Software License, version 2.0. See
-[LICENSE](https://github.com/canonical/charmed-superset-rock/blob/main/LICENSE)
+[LICENSE](https://github.com/canonical/charmed-ranger-rock/blob/main/LICENSE)
 for more information.
