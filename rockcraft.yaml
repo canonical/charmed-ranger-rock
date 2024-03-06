@@ -14,24 +14,33 @@ license: Apache-2.0
 platforms:
   amd64:
 
+services:
+  ranger-admin:
+    override: replace
+    summary: "ranger admin service"
+    startup: disabled
+    command: "/home/ranger/scripts/ranger-admin-entrypoint.sh"
+    environment:
+      JAVA_OPTS: "-Duser.timezone=UTC0"
+  ranger-usersync:
+    override: replace
+    summary: "ranger usersync service"
+    startup: disabled
+    command: "/home/ranger/scripts/ranger-usersync-entrypoint.sh"
+
 parts:
   base:
-    plugin: nil
+    plugin: dump
     source: "https://downloads.apache.org/ranger/2.4.0/apache-ranger-2.4.0.tar.gz" # yamllint disable-line
+    source-type: tar
     build-packages:
       - build-essential
       - curl
-      - gcc
-      - gnupg
-      - patch
       - wget
       - maven
       - git
       - openjdk-11-jdk-headless
     build-environment:
-      - SOURCE: "https://downloads.apache.org/ranger/"
-      - VERSION: "2.4.0"
-      - TAR_FILE: "apache-ranger-2.4.0.tar.gz"
       - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
       - RANGER_DIST: /home/ranger/dist
     override-build: |
@@ -39,19 +48,6 @@ parts:
 
       # make home directory
       mkdir -p ${RANGER_DIST}
-
-      # Download the Ranger tar
-      wget "${SOURCE}/${VERSION}/${TAR_FILE}" -O ranger.tar.gz
-      wget "${SOURCE}/${VERSION}/${TAR_FILE}.sha512" -O ranger.tar.sha512
-
-      # Validate successful file download
-      sha_file=$(sed 's/^.*: //' ranger.tar.sha512)
-      hash=$(echo $sha_file | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
-      echo "$hash  ranger.tar.gz" | sha512sum --check
-
-      # Unpack tar
-      tar -zxvf ranger.tar.gz -C ${RANGER_DIST} --strip-components 1
-      rm -rf ranger.tar.gz
 
       # Build Ranger
       mvn clean compile package install \
@@ -68,9 +64,7 @@ parts:
 
       # Set up groups, users
       groupadd ranger && \
-      useradd -g ranger -ms /bin/bash ranger && \
-      useradd -g ranger -ms /bin/bash rangeradmin && \
-      useradd -g ranger -ms /bin/bash rangerusersync && \
+      useradd -g ranger -ms /bin/bash ranger
 
       # Update permission
       chown -R ranger:ranger ${RANGER_DIST}
@@ -82,7 +76,6 @@ parts:
   admin:
     after: [base]
     plugin: nil
-    source: "https://downloads.apache.org/ranger/2.4.0/apache-ranger-2.4.0.tar.gz" # yamllint disable-line
     build-environment:
       - VERSION: "2.4.0"
       - RANGER_DIST: /home/ranger/dist
@@ -99,6 +92,7 @@ parts:
         ${CRAFT_STAGE}/usr/share/java/ && \
 
       # Grant permissions
+      useradd -g ranger -ms /bin/bash rangeradmin && \
       chown -R ranger:ranger \
         ${CRAFT_PRIME}${RANGER_HOME}/admin/ \
         ${CRAFT_STAGE}/var/run/ranger/ \
@@ -114,7 +108,6 @@ parts:
   usersync:
     after: [base]
     plugin: nil
-    source: "https://downloads.apache.org/ranger/2.4.0/apache-ranger-2.4.0.tar.gz" # yamllint disable-line
     build-environment:
       - VERSION: "2.4.0"
       - RANGER_DIST: /home/ranger/dist
@@ -132,6 +125,7 @@ parts:
         ${CRAFT_STAGE}/usr/bin/ranger-usersync
 
       # Grant permissions
+      useradd -g ranger -ms /bin/bash rangerusersync && \
       chown -R ranger:ranger \
         ${CRAFT_PRIME}${RANGER_HOME}/usersync/ \
         ${CRAFT_STAGE}${RANGER_SCRIPTS}/ \
