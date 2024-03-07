@@ -14,6 +14,9 @@ license: Apache-2.0
 platforms:
   amd64:
 
+# Please refer to
+# https://discourse.ubuntu.com/t/unifying-user-identity-across-snaps-and-rocks/36469
+# for more information about shared user.
 run_user: _daemon_
 
 services:
@@ -34,7 +37,7 @@ parts:
   base:
     plugin: dump
     source: "https://downloads.apache.org/ranger/2.4.0/apache-ranger-2.4.0.tar.gz" # yamllint disable-line
-    source-checksum: sha512/5bc934416e7239e2b74843399389a69e8c129322ff0a67b2e7a541a4dd2171357b10925ea29861c40e7590a6523494d46343fdda38049d9a66e48d80eed11a4b
+    source-checksum: "sha512/5bc934416e7239e2b74843399389a69e8c129322ff0a67b2e7a541a4dd2171357b10925ea29861c40e7590a6523494d46343fdda38049d9a66e48d80eed11a4b" # yamllint disable-line
     build-packages:
       - build-essential
       - curl
@@ -94,6 +97,23 @@ parts:
       - var/run/ranger
       - var/log/ranger
       - usr/share/java
+    permissions:
+      - path: usr/lib/ranger/admin
+        owner: 584792
+        group: 584792
+        mode: "755"
+      - path: var/run/ranger
+        owner: 584792
+        group: 584792
+        mode: "755"
+      - path: var/log/ranger
+        owner: 584792
+        group: 584792
+        mode: "755"
+      - path: usr/share/java
+        owner: 584792
+        group: 584792
+        mode: "755"
 
   usersync:
     after: [base]
@@ -120,6 +140,19 @@ parts:
       - usr/lib/ranger/usersync
       - var/log/ranger/usersync
       - etc/ranger
+    permissions:
+      - path: usr/lib/ranger/usersync
+        owner: 584792
+        group: 584792
+        mode: "755"
+      - path: var/log/ranger/usersync
+        owner: 584792
+        group: 584792
+        mode: "755"
+      - path: etc/ranger
+        owner: 584792
+        group: 584792
+        mode: "755"
 
   local-files:
     plugin: dump
@@ -130,31 +163,21 @@ parts:
     stage:
       - home/ranger/scripts/ranger-admin-entrypoint.sh
       - home/ranger/scripts/ranger-usersync-entrypoint.sh
+    permissions:
+      - path: home/ranger/scripts
+        owner: 584792
+        group: 584792
+        mode: "755"
 
-  user-setup:
+  package-management:
     plugin: nil
     after: [admin, usersync]
     overlay-packages:
       - ca-certificates
-      - vim
-      - openjdk-11-jdk-headless
-      - libpostgresql-jdbc-java
       - python3
     overlay-script: |
       ln -s /usr/bin/python3 ${CRAFT_OVERLAY}/usr/bin/python
-    override-prime: |
-      # Please refer to https://discourse.ubuntu.com/t/unifying-user-identity-across-snaps-and-rocks/36469
-      # for more information about shared user.
-      RANGER_GID=584792
-      RANGER_UID=584792
-
-      craftctl default
-
-      # Update permissions
-      chown -R ${RANGER_GID}:${RANGER_UID} home/ranger/dist \
-        usr/lib/ranger/admin/ \
-        var/run/ranger/ \
-        var/log/ranger/ \
-        usr/lib/ranger/usersync/ \
-        home/ranger/scripts \
-        etc/ranger
+    stage-packages:
+      - vim
+      - openjdk-11-jdk-headless
+      - libpostgresql-jdbc-java
