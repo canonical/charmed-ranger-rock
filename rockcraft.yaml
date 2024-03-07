@@ -14,6 +14,8 @@ license: Apache-2.0
 platforms:
   amd64:
 
+run_user: _daemon_
+
 services:
   ranger-admin:
     override: replace
@@ -32,11 +34,10 @@ parts:
   base:
     plugin: dump
     source: "https://downloads.apache.org/ranger/2.4.0/apache-ranger-2.4.0.tar.gz" # yamllint disable-line
-    source-type: tar
+    source-checksum: sha512/5bc934416e7239e2b74843399389a69e8c129322ff0a67b2e7a541a4dd2171357b10925ea29861c40e7590a6523494d46343fdda38049d9a66e48d80eed11a4b
     build-packages:
       - build-essential
       - curl
-      - wget
       - maven
       - git
       - openjdk-11-jdk-headless
@@ -45,9 +46,6 @@ parts:
       - RANGER_DIST: /home/ranger/dist
     override-build: |
       craftctl default
-
-      # make home directory
-      mkdir -p ${RANGER_DIST}
 
       # Build Ranger
       mvn clean compile package install \
@@ -62,91 +60,80 @@ parts:
         -Dmaven.wagon.http.ssl.allowall=true \
         -Dmaven.wagon.http.ssl.ignore.validity.dates=true
 
-      # Set up groups, users
-      groupadd ranger && \
-      useradd -g ranger -ms /bin/bash ranger
-
-      # Update permission
-      chown -R ranger:ranger ${RANGER_DIST}
-
-      mv target ${RANGER_DIST}/target
-      mkdir -p ${CRAFT_STAGE}${RANGER_DIST}
-      cp -r ${RANGER_DIST}/target ${CRAFT_STAGE}${RANGER_DIST}/target
+      # Make dist directory
+      mkdir -p ${CRAFT_PART_INSTALL}${RANGER_DIST}
+      mv target ${CRAFT_PART_INSTALL}${RANGER_DIST}/target
+    stage:
+      - home/ranger/dist/target/ranger-2.4.0-admin.tar.gz
+      - home/ranger/dist/target/ranger-2.4.0-usersync.tar.gz
 
   admin:
     after: [base]
     plugin: nil
     build-environment:
       - VERSION: "2.4.0"
-      - RANGER_DIST: /home/ranger/dist
-      - RANGER_SCRIPTS: /home/ranger/scripts
+      - RANGER_TARGET: /home/ranger/dist/target
       - RANGER_HOME: /usr/lib/ranger
     override-build: |
       craftctl default
-      mkdir -p ${CRAFT_PRIME}${RANGER_HOME}/admin
 
       # Create directories
       mkdir -p \
-        ${CRAFT_STAGE}/var/run/ranger \
-        ${CRAFT_STAGE}/var/log/ranger \
-        ${CRAFT_STAGE}/usr/share/java/ && \
-
-      # Grant permissions
-      useradd -g ranger -ms /bin/bash rangeradmin && \
-      chown -R ranger:ranger \
-        ${CRAFT_PRIME}${RANGER_HOME}/admin/ \
-        ${CRAFT_STAGE}/var/run/ranger/ \
-        ${CRAFT_STAGE}/var/log/ranger/
+        ${CRAFT_PART_INSTALL}${RANGER_HOME}/admin \
+        ${CRAFT_PART_INSTALL}/var/run/ranger \
+        ${CRAFT_PART_INSTALL}/var/log/ranger \
+        ${CRAFT_PART_INSTALL}/usr/share/java
 
       # Unpack admin tar
       tar xvfz \
-        ${CRAFT_STAGE}${RANGER_DIST}/target/ranger-${VERSION}-admin.tar.gz \
-        --directory=${CRAFT_PRIME}${RANGER_HOME}/admin \
-        --strip-components=1 && \
-      rm -f ${CRAFT_STAGE}${RANGER_DIST}/ranger-${VERSION}-admin.tar.gz
+        ${CRAFT_STAGE}${RANGER_TARGET}/ranger-${VERSION}-admin.tar.gz \
+        --directory=${CRAFT_PART_INSTALL}${RANGER_HOME}/admin \
+        --strip-components=1
+    stage:
+      - usr/lib/ranger/admin
+      - var/run/ranger
+      - var/log/ranger
+      - usr/share/java
 
   usersync:
     after: [base]
     plugin: nil
     build-environment:
       - VERSION: "2.4.0"
-      - RANGER_DIST: /home/ranger/dist
-      - RANGER_SCRIPTS: /home/ranger/scripts
+      - RANGER_TARGET: /home/ranger/dist/target
       - RANGER_HOME: /usr/lib/ranger
     override-build: |
       craftctl default
 
       # Create directories
       mkdir -p \
-        ${CRAFT_PRIME}${RANGER_HOME}/usersync \
-        ${CRAFT_STAGE}/var/log/ranger/usersync \
-        ${CRAFT_STAGE}/etc/ranger \
-        ${CRAFT_STAGE}${RANGER_SCRIPTS} \
-        ${CRAFT_STAGE}/usr/bin/ranger-usersync
-
-      # Grant permissions
-      useradd -g ranger -ms /bin/bash rangerusersync && \
-      chown -R ranger:ranger \
-        ${CRAFT_PRIME}${RANGER_HOME}/usersync/ \
-        ${CRAFT_STAGE}${RANGER_SCRIPTS}/ \
-        ${CRAFT_STAGE}/etc/ranger
+        ${CRAFT_PART_INSTALL}${RANGER_HOME}/usersync \
+        ${CRAFT_PART_INSTALL}/var/log/ranger/usersync \
+        ${CRAFT_PART_INSTALL}/etc/ranger
 
       # Unpack usersync tar
       tar xvfz \
-        ${CRAFT_STAGE}${RANGER_DIST}/target/ranger-${VERSION}-usersync.tar.gz \
-        --directory=${CRAFT_PRIME}${RANGER_HOME}/usersync \
-        --strip-components=1 && \
-      rm -f ${CRAFT_STAGE}${RANGER_DIST}/ranger-${VERSION}-usersync.tar.gz
+        ${CRAFT_STAGE}${RANGER_TARGET}/ranger-${VERSION}-usersync.tar.gz \
+        --directory=${CRAFT_PART_INSTALL}${RANGER_HOME}/usersync \
+        --strip-components=1
+    stage:
+      - usr/lib/ranger/usersync
+      - var/log/ranger/usersync
+      - etc/ranger
 
   local-files:
     plugin: dump
     source: ./helper-scripts
     organize:
-      admin-entrypoint.sh: /home/ranger/scripts/ranger-admin-entrypoint.sh
-      usersync-entrypoint.sh: /home/ranger/scripts/ranger-usersync-entrypoint.sh
+      admin-entrypoint.sh: home/ranger/scripts/ranger-admin-entrypoint.sh
+      usersync-entrypoint.sh: home/ranger/scripts/ranger-usersync-entrypoint.sh
+    stage:
+      - home/ranger/scripts/ranger-admin-entrypoint.sh
+      - home/ranger/scripts/ranger-usersync-entrypoint.sh
 
-  overlay-pkgs:
+  user-setup:
     plugin: nil
+    after: [admin, usersync]
     overlay-packages:
       - ca-certificates
       - vim
@@ -155,3 +142,19 @@ parts:
       - python3
     overlay-script: |
       ln -s /usr/bin/python3 ${CRAFT_OVERLAY}/usr/bin/python
+    override-prime: |
+      # Please refer to https://discourse.ubuntu.com/t/unifying-user-identity-across-snaps-and-rocks/36469
+      # for more information about shared user.
+      RANGER_GID=584792
+      RANGER_UID=584792
+
+      craftctl default
+
+      # Update permissions
+      chown -R ${RANGER_GID}:${RANGER_UID} home/ranger/dist \
+        usr/lib/ranger/admin/ \
+        var/run/ranger/ \
+        var/log/ranger/ \
+        usr/lib/ranger/usersync/ \
+        home/ranger/scripts \
+        etc/ranger
