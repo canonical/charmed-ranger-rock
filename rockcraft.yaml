@@ -35,14 +35,17 @@ services:
 
 parts:
   base:
-    plugin: dump
+    plugin: maven
+    maven-parameters: ["-DskipTests=true", "-Dmaven.test.skip=true", "-Drat.skip=true", "-Dpmd.skip=true", "-Dfindbugs.skip=true", "-Dspotbugs.skip=true", "-Dcheckstyle.skip=true", "-Dmaven.wagon.http.ssl.insecure=true", "-Dmaven.wagon.http.ssl.allowall=true", "-Dmaven.wagon.http.ssl.ignore.validity.dates=true"] # yamllint disable-line
     source: "https://downloads.apache.org/ranger/2.4.0/apache-ranger-2.4.0.tar.gz" # yamllint disable-line
+    source-type: "tar"
     source-checksum: "sha512/5bc934416e7239e2b74843399389a69e8c129322ff0a67b2e7a541a4dd2171357b10925ea29861c40e7590a6523494d46343fdda38049d9a66e48d80eed11a4b" # yamllint disable-line
     build-packages:
       - build-essential
       - curl
-      - maven
       - git
+      - maven
+      - gcc
       - openjdk-11-jdk-headless
     build-environment:
       - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
@@ -50,22 +53,10 @@ parts:
     override-build: |
       craftctl default
 
-      # Build Ranger
-      mvn clean compile package install \
-        -DskipTests=true \
-        -Dmaven.test.skip=true \
-        -Drat.skip=true \
-        -Dpmd.skip=true \
-        -Dfindbugs.skip=true \
-        -Dspotbugs.skip=true \
-        -Dcheckstyle.skip=true \
-        -Dmaven.wagon.http.ssl.insecure=true \
-        -Dmaven.wagon.http.ssl.allowall=true \
-        -Dmaven.wagon.http.ssl.ignore.validity.dates=true
-
-      # Make dist directory
-      mkdir -p ${CRAFT_PART_INSTALL}${RANGER_DIST}
-      mv target ${CRAFT_PART_INSTALL}${RANGER_DIST}/target
+      # Move target directory
+      mv target ${CRAFT_PART_INSTALL}/target
+    organize:
+      target: home/ranger/dist/target
     stage:
       - home/ranger/dist/target/ranger-2.4.0-admin.tar.gz
       - home/ranger/dist/target/ranger-2.4.0-usersync.tar.gz
