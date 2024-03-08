@@ -69,6 +69,8 @@ parts:
     stage:
       - home/ranger/dist/target/ranger-2.4.0-admin.tar.gz
       - home/ranger/dist/target/ranger-2.4.0-usersync.tar.gz
+    prime:
+      - "-*"
 
   admin:
     after: [base]
@@ -174,9 +176,7 @@ parts:
     after: [admin, usersync]
     overlay-packages:
       - ca-certificates
-      - python3
-    overlay-script: |
-      ln -s /usr/bin/python3 ${CRAFT_OVERLAY}/usr/bin/python
+      - python-is-python3
     stage-packages:
       - vim
       - openjdk-11-jdk-headless
