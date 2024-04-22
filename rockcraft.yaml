@@ -39,7 +39,7 @@ parts:
     maven-parameters: ["-DskipTests=true", "-Dmaven.test.skip=true", "-Drat.skip=true", "-Dpmd.skip=true", "-Dfindbugs.skip=true", "-Dspotbugs.skip=true", "-Dcheckstyle.skip=true", "-Dmaven.wagon.http.ssl.insecure=true", "-Dmaven.wagon.http.ssl.allowall=true", "-Dmaven.wagon.http.ssl.ignore.validity.dates=true"] # yamllint disable-line
     source: https://github.com/canonical/ranger.git
     # Commit from 08/04/24, after introduction of prometheus compatible metrics.
-    source_commit: d745caa4c539aaeb239fac4931ae7df899667d9d
+    source-commit: d745caa4c539aaeb239fac4931ae7df899667d9d
     source-type: git
     build-packages:
       - build-essential
