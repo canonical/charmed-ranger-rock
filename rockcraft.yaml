@@ -37,9 +37,10 @@ parts:
   base:
     plugin: maven
     maven-parameters: ["-DskipTests=true", "-Dmaven.test.skip=true", "-Drat.skip=true", "-Dpmd.skip=true", "-Dfindbugs.skip=true", "-Dspotbugs.skip=true", "-Dcheckstyle.skip=true", "-Dmaven.wagon.http.ssl.insecure=true", "-Dmaven.wagon.http.ssl.allowall=true", "-Dmaven.wagon.http.ssl.ignore.validity.dates=true"] # yamllint disable-line
-    source: "https://downloads.apache.org/ranger/2.4.0/apache-ranger-2.4.0.tar.gz" # yamllint disable-line
-    source-type: "tar"
-    source-checksum: "sha512/5bc934416e7239e2b74843399389a69e8c129322ff0a67b2e7a541a4dd2171357b10925ea29861c40e7590a6523494d46343fdda38049d9a66e48d80eed11a4b" # yamllint disable-line
+    source: https://github.com/canonical/ranger.git
+    # Commit from 08/04/24, after introduction of prometheus compatible metrics.
+    source-commit: d745caa4c539aaeb239fac4931ae7df899667d9d
+    source-type: git
     build-packages:
       - build-essential
       - curl
@@ -58,8 +59,8 @@ parts:
     organize:
       target: home/ranger/dist/target
     stage:
-      - home/ranger/dist/target/ranger-2.4.0-admin.tar.gz
-      - home/ranger/dist/target/ranger-2.4.0-usersync.tar.gz
+      - home/ranger/dist/target/ranger-3.0.0-SNAPSHOT-admin.tar.gz
+      - home/ranger/dist/target/ranger-3.0.0-SNAPSHOT-usersync.tar.gz
     prime:
       - "-*"
 
@@ -67,7 +68,7 @@ parts:
     after: [base]
     plugin: nil
     build-environment:
-      - VERSION: "2.4.0"
+      - VERSION: "3.0.0-SNAPSHOT"
       - RANGER_TARGET: /home/ranger/dist/target
       - RANGER_HOME: /usr/lib/ranger
     override-build: |
@@ -112,7 +113,7 @@ parts:
     after: [base]
     plugin: nil
     build-environment:
-      - VERSION: "2.4.0"
+      - VERSION: "3.0.0-SNAPSHOT"
       - RANGER_TARGET: /home/ranger/dist/target
       - RANGER_HOME: /usr/lib/ranger
     override-build: |
