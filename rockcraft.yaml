@@ -34,7 +34,22 @@ services:
     command: "/home/ranger/scripts/ranger-usersync-entrypoint.sh"
 
 parts:
+  patches:
+    plugin: dump
+    source: ./patches
+    organize:
+      lucene.patch: patches/update-lucene-version.patch
+      elasticsearch-protocol.patch: patches/elasticsearch-protocol.patch
+      jaxb-dependency.patch: patches/jaxb-dependency.patch
+    stage:
+      - patches/update-lucene-version.patch
+      - patches/elasticsearch-protocol.patch
+      - patches/jaxb-dependency.patch
+    prime:
+      - "-*"
+
   base:
+    after: [patches]
     plugin: maven
     maven-parameters: ["-DskipTests=true", "-Dmaven.test.skip=true", "-Drat.skip=true", "-Dpmd.skip=true", "-Dfindbugs.skip=true", "-Dspotbugs.skip=true", "-Dcheckstyle.skip=true", "-Dmaven.wagon.http.ssl.insecure=true", "-Dmaven.wagon.http.ssl.allowall=true", "-Dmaven.wagon.http.ssl.ignore.validity.dates=true"] # yamllint disable-line
     source: https://github.com/canonical/ranger.git
@@ -52,6 +67,8 @@ parts:
       - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
       - RANGER_DIST: /home/ranger/dist
     override-build: |
+      git apply ${CRAFT_STAGE}/patches/*.patch
+
       craftctl default
 
       # Move target directory

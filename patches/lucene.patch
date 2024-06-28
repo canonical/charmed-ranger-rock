@@ -1,0 +1,27 @@
+diff --git a/agents-audit/pom.xml b/agents-audit/pom.xml
+index aba33e227..d8dcc83f0 100644
+--- a/agents-audit/pom.xml
++++ b/agents-audit/pom.xml
+@@ -312,7 +312,7 @@
+         <dependency>
+             <groupId>org.apache.lucene</groupId>
+             <artifactId>lucene-spatial</artifactId>
+-            <version>${lucene.version}</version>
++            <version>${lucene.spatial.version}</version>
+         </dependency>
+         <dependency>
+             <groupId>org.apache.lucene</groupId>
+diff --git a/pom.xml b/pom.xml
+index b98196288..249041b26 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -243,7 +243,8 @@
+         <net.minidev.asm.version>1.0.2</net.minidev.asm.version>
+         <org.bouncycastle.bcprov-jdk15on>1.70</org.bouncycastle.bcprov-jdk15on>
+         <org.bouncycastle.bcpkix-jdk15on>1.70</org.bouncycastle.bcpkix-jdk15on>
+-        <lucene.version>8.4.0</lucene.version>
++        <lucene.version>8.11.2</lucene.version>
++        <lucene.spatial.version>8.4.1</lucene.spatial.version>
+         <hppc.version>0.8.0</hppc.version>
+         <joda.time.version>2.10.6</joda.time.version>
+         <nimbus-jose-jwt.version>9.31</nimbus-jose-jwt.version>
