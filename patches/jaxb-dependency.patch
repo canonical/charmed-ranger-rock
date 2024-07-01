@@ -1,0 +1,34 @@
+diff --git a/pom.xml b/pom.xml
+index b98196288..c16bbb488 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -151,6 +151,7 @@
+         <jersey-core.version>1.19.3</jersey-core.version>
+         <jersey-server.version>1.19.3</jersey-server.version>
+         <jersey-spring.version>1.19.3</jersey-spring.version>
++        <jaxb-core.version>2.3.0.1</jaxb-core.version>
+         <jaxb-impl.version>2.3.3</jaxb-impl.version>
+         <jettison.version>1.5.4</jettison.version>
+         <jetty-client.version>9.4.49.v20220914</jetty-client.version>
+@@ -955,10 +956,20 @@
+                 <artifactId>jaxb-api</artifactId>
+                 <version>${jaxb.api.version}</version>
+             </dependency>
++            <dependency>
++                <groupId>com.sun.xml.bind</groupId>
++                <artifactId>jaxb-core</artifactId>
++                <version>${jaxb-core.version}</version>
++            </dependency>
++            <dependency>
++                <groupId>com.sun.xml.bind</groupId>
++                <artifactId>jaxb-impl</artifactId>
++                <version>${jaxb-impl.version}</version>
++            </dependency>
+             <dependency>
+                 <groupId>org.glassfish.jaxb</groupId>
+                 <artifactId>jaxb-runtime</artifactId>
+-                <version>${jaxb.api.version}</version>
++                <version>${jaxb-impl.version}</version>
+             </dependency>
+             <dependency>
+                 <groupId>org.jacoco</groupId>
