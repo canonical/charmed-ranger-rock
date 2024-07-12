@@ -1,11 +1,12 @@
-# Charmed Apache Ranger ROCK
+# Charmed Apache Ranger rock
 
-This repository contains the packaging metadata for creating a Charmed Ranger ROCK. This ROCK image is based on the upstream [Apache Ranger](https://downloads.apache.org/ranger/) image.
+This repository contains the packaging metadata for creating a Charmed Ranger rock. This rock is based on the upstream [Apache Ranger](https://downloads.apache.org/ranger/) image.
 
-For more information on ROCKs, visit the [rockcraft Github](https://github.com/canonical/rockcraft).
+For more information on rocks, visit the [rockcraft Github](https://github.com/canonical/rockcraft).
 
-## Building the ROCK
-The steps outlined below are based on the assumption that you are building the ROCK with the latest LTS of Ubuntu.
+## Building the rock
+
+The steps outlined below are based on the assumption that you are building the rock with the latest LTS of Ubuntu.
 If you are using another version of Ubuntu or another operating system, the process may be different. 
 To avoid any issue with other operating systems you can simply build the image with [multipass](https://multipass.run/):
 ```bash
@@ -35,7 +36,9 @@ newgrp docker
 sudo snap disable docker
 sudo snap enable docker
 ```
-### Packing and Running the ROCK
+
+### Packing and Running the rock
+
 ```bash
 rockcraft pack
 sudo skopeo --insecure-policy copy oci-archive:charmed-ranger-rock_2.4.0-22.04-edge_amd64.rock docker-daemon:charmed-ranger-rock:2.4.0
@@ -61,7 +64,7 @@ Further information on connecting services and creating policies can be found at
 `make clean-all` will remove the image and get you ready to start from `make dev`
 
 ## License
-The Charmed Ranger ROCK is free software, distributed under the Apache
+The Charmed Ranger rock is free software, distributed under the Apache
 Software License, version 2.0. See
 [LICENSE](https://github.com/canonical/charmed-ranger-rock/blob/main/LICENSE)
 for more information.
