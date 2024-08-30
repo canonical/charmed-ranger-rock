@@ -41,10 +41,12 @@ parts:
       lucene.patch: patches/update-lucene-version.patch
       elasticsearch-protocol.patch: patches/elasticsearch-protocol.patch
       jaxb-dependency.patch: patches/jaxb-dependency.patch
+      update-acl.patch: patches/update-acl.patch
     stage:
       - patches/update-lucene-version.patch
       - patches/elasticsearch-protocol.patch
       - patches/jaxb-dependency.patch
+      - patches/update-acl.patch
     prime:
       - "-*"
 
