@@ -19,6 +19,9 @@ platforms:
 # for more information about shared user.
 run_user: _daemon_
 
+environment:
+  JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
+
 services:
   ranger-admin:
     override: replace
@@ -34,29 +37,11 @@ services:
     command: "/home/ranger/scripts/ranger-usersync-entrypoint.sh"
 
 parts:
-  patches:
-    plugin: dump
-    source: ./patches
-    organize:
-      lucene.patch: patches/update-lucene-version.patch
-      elasticsearch-protocol.patch: patches/elasticsearch-protocol.patch
-      jaxb-dependency.patch: patches/jaxb-dependency.patch
-      update-acl.patch: patches/update-acl.patch
-    stage:
-      - patches/update-lucene-version.patch
-      - patches/elasticsearch-protocol.patch
-      - patches/jaxb-dependency.patch
-      - patches/update-acl.patch
-    prime:
-      - "-*"
-
   base:
-    after: [patches]
     plugin: maven
     maven-parameters: ["-DskipTests=true", "-Dmaven.test.skip=true", "-Drat.skip=true", "-Dpmd.skip=true", "-Dfindbugs.skip=true", "-Dspotbugs.skip=true", "-Dcheckstyle.skip=true", "-Dmaven.wagon.http.ssl.insecure=true", "-Dmaven.wagon.http.ssl.allowall=true", "-Dmaven.wagon.http.ssl.ignore.validity.dates=true"] # yamllint disable-line
     source: https://github.com/canonical/ranger.git
-    # Commit from 08/04/24, after introduction of prometheus compatible metrics.
-    source-commit: d745caa4c539aaeb239fac4931ae7df899667d9d
+    source-branch: ranger-2.4-0-trino-436
     source-type: git
     build-packages:
       - build-essential
@@ -64,13 +49,11 @@ parts:
       - git
       - maven
       - gcc
-      - openjdk-11-jdk-headless
+      - openjdk-21-jdk-headless
     build-environment:
-      - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+      - JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
       - RANGER_DIST: /home/ranger/dist
     override-build: |
-      git apply ${CRAFT_STAGE}/patches/*.patch
-
       craftctl default
 
       # Move target directory
@@ -169,7 +152,7 @@ parts:
 
   local-files:
     plugin: dump
-    source: ./helper-scripts
+    source: ./local-files
     organize:
       admin-entrypoint.sh: home/ranger/scripts/ranger-admin-entrypoint.sh
       usersync-entrypoint.sh: home/ranger/scripts/ranger-usersync-entrypoint.sh
@@ -186,9 +169,9 @@ parts:
     plugin: nil
     after: [admin, usersync]
     overlay-packages:
+      - openjdk-21-jdk-headless
       - ca-certificates
       - python-is-python3
     stage-packages:
       - vim
-      - openjdk-11-jdk-headless
       - libpostgresql-jdbc-java
