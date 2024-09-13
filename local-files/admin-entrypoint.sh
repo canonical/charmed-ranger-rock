@@ -1,6 +1,5 @@
 #!/bin/bash
 
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 export JVMFLAGS=-Dsun.net.spi.nameservice.provider.1=dns,sun
 
 cd /usr/lib/ranger/admin && \
