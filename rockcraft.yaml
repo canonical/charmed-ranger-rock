@@ -5,7 +5,7 @@
 name: charmed-ranger-rock
 base: ubuntu@22.04
 version: 2.4.0-22.04-edge
-summary: Charmed ranger ROCK OCI
+summary: Charmed ranger rock OCI
 description: |
   Apache Ranger™ is a framework to enable, monitor and
   manage comprehensive data security across the Hadoop platform.
