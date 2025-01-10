@@ -115,7 +115,7 @@ parts:
     after: [base]
     plugin: nil
     build-environment:
-      - VERSION: "3.0.0-SNAPSHOT"
+      - VERSION: "2.5.1-SNAPSHOT"
       - RANGER_TARGET: /home/ranger/dist/target
       - RANGER_HOME: /usr/lib/ranger
     override-build: |
