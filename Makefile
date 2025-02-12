@@ -2,7 +2,7 @@
 REPO_FOLDER = charmed-ranger-rock
 REPO = https://github.com/canonical/$(REPO_FOLDER).git
 ROCK_DEV = rock-dev
-ROCK_VERSION = 2.5.1
+ROCK_VERSION = 2.6.0
 UBUNTU_VER = 22.04
 DOCKER_NAME = ranger-admin
 DOCKER_PORT = 6080
