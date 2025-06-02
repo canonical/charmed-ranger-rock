@@ -1,5 +1,8 @@
 # Charmed Apache Ranger ROCK
 
+> ⚠️ **This project has moved!**  
+> Now it is part of the `ranger-k8s-operator` repository that can be found [here](https://github.com/canonical/ranger-k8s-operator).
+
 This repository contains the packaging metadata for creating a Charmed Ranger ROCK. This ROCK image is based on the upstream [Apache Ranger](https://downloads.apache.org/ranger/) image.
 
 For more information on ROCKs, visit the [rockcraft Github](https://github.com/canonical/rockcraft).
